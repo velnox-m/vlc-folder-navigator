@@ -49,6 +49,11 @@ for _, ext in ipairs(MEDIA_EXTENSIONS) do
 	media_exts[ext] = true
 end
 
+local PLAYLIST_EXTENSIONS = {
+	m3u = true, m3u8 = true, xspf = true, pls = true,
+	asx = true, cue = true, b4s = true, wpl = true, vlc = true,
+}
+
 local IS_WINDOWS = (package and package.config and package.config:sub(1, 1) == "\\")
 	or vlc.win ~= nil
 
@@ -57,7 +62,7 @@ local handled_id = nil
 local last_error = nil
 
 local function log(message)
-	if DEBUG then
+	if DEBUG and vlc.msg and vlc.msg.warn then
 		vlc.msg.warn("[folder_nav] " .. tostring(message))
 	end
 end
@@ -70,6 +75,11 @@ end
 local function is_media_file(name)
 	local ext = name:match("%.([^%.\\/]+)$")
 	return ext ~= nil and media_exts[ext:lower()] == true
+end
+
+local function is_playlist_file(name)
+	local ext = name:match("%.([^%.\\/]+)$")
+	return ext ~= nil and PLAYLIST_EXTENSIONS[ext:lower()] == true
 end
 
 local function basename(path)
@@ -198,19 +208,21 @@ local function join_path(dir, name)
 	return dir .. (IS_WINDOWS and "\\" or "/") .. name
 end
 
+-- Supports VLC 4.0+ (vlc.player.item) and VLC 2.x/3.x (vlc.input.item)
 local function current_uri()
-	if not (vlc.input and vlc.input.item) then
+	local item_fn = (vlc.player and vlc.player.item) or (vlc.input and vlc.input.item)
+	if not item_fn then
 		return nil
 	end
 	local ok, uri = pcall(function()
-		local item = vlc.input.item()
+		local item = item_fn()
 		return item and item:uri() or nil
 	end)
 	return ok and uri or nil
 end
 
 local function stat_path(path)
-	local stat_fn = (vlc.net and vlc.net.stat) or (vlc.io and vlc.io.stat)
+	local stat_fn = (vlc.io and vlc.io.stat) or (vlc.net and vlc.net.stat)
 	if not stat_fn then
 		return nil
 	end
@@ -241,7 +253,7 @@ end
 local function is_dir(path)
 	local stat = stat_path(path)
 	if stat and stat.type then
-		return stat.type == "dir"
+		return stat.type == "dir" or stat.type == "directory"
 	end
 	return list_entries(path) ~= nil
 end
@@ -485,8 +497,13 @@ end
 
 local function poll()
 	local uri = current_uri()
-	local path = uri and uri_to_path(uri)
-	if not path then
+	if not uri then
+		handled_id = nil
+		return
+	end
+
+	local path = uri_to_path(uri)
+	if not path or is_playlist_file(path) then
 		return
 	end
 
@@ -503,7 +520,9 @@ while true do
 	local ok, err = pcall(poll)
 	if not ok and tostring(err) ~= last_error then
 		last_error = tostring(err)
-		vlc.msg.err("[folder_nav] " .. last_error)
+		if vlc.msg and vlc.msg.err then
+			vlc.msg.err("[folder_nav] " .. last_error)
+		end
 	end
 	vlc.misc.mwait(vlc.misc.mdate() + CHECK_INTERVAL_US)
 end

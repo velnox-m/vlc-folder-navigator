@@ -51,7 +51,7 @@ Free to use, modify and share.
 ## Acknowledgments & Credits
 
 This project builds upon the foundational work of earlier community extensions and scripts for VLC:
-- **[VlcPrevNext](https://github.com/djomlastic/VlcPrevNext)** by [djomlastic](https://github.com/djomlastic) — Inspired the playlist re-ordering/movement logic.
+- **[VlcPrevNext](https://github.com/djomlastic/vlc-prev-next)** by [djomlastic](https://github.com/djomlastic) — Inspired the playlist re-ordering/movement logic.
 - **[next_in_folder.lua](https://github.com/diegogliarte/vlc-next-in-folder)** by [diegogliarte](https://github.com/diegogliarte) — Inspired the background interface loop structure.
 
 `vlc-folder-navigator` refactors these concepts into the folder_nav.lua script.

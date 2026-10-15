@@ -1,8 +1,10 @@
-# folder_nav.lua
+# VLC Folder Navigator (folder_nav.lua)
 
-Folder-aware **Previous / Next** for VLC, the way MPC-HC does it.
+> Automatically play the next or previous media file in the same folder using VLC Media Player's native buttons, hotkeys, and media keys—just like MPC-HC.
 
-Open any video or audio file, and VLC's normal Next / Previous buttons, hotkeys, and media keys move through the other files in the same folder. No manual playlist building and no reopening files.
+## What is this?
+
+**VLC Folder Navigator** is a background Lua interface script for VLC Media Player that solves VLC's missing folder-navigation behavior. By default, VLC requires you to manually load folders or open files individually. With this script, when you open any single video or audio file, it automatically queues all other media files in that directory into your playlist so you can seamlessly skip forward and backward through an entire folder.
 
 ## How it works
 
@@ -41,7 +43,7 @@ Files you pick from the script's own playlist are left alone, so navigating neve
 
    ```sh
    vlc --extraintf=luaintf --lua-intf=folder_nav
-
+   ```
 ## License
 
 Free to use, modify and share.
